@@ -35,6 +35,7 @@
           placeholder="请输入信息"
           size="large"
           @search="sendMessage"
+          enterkeyhint="send"
       >
         <template #enterButton>
           <a-button @click="sendMessage">发送</a-button>
