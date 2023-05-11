@@ -7,6 +7,7 @@
         </a>
         <template #overlay>
           <a-menu @click="handleMenuClick">
+            <a-menu-item key="clearMsg">清空</a-menu-item>
             <a-menu-item key="refresh">刷新</a-menu-item>
           </a-menu>
         </template>
@@ -24,23 +25,33 @@
           </a-avatar>
         </template>
         <template v-else>
-          <a-avatar shape="square" :src="'/src/assets/openai.webp'"/>
+          <a-avatar shape="square" :src="message.avatar"/>
           <div class="chat-message" v-html="message.content"></div>
         </template>
       </div>
     </template>
     <template v-slot:footer>
-      <a-input-search
-          v-model:value="inputMessage"
-          placeholder="请输入信息"
-          size="large"
-          @search="sendMessage"
-          enterkeyhint="send"
-      >
-        <template #enterButton>
-          <a-button @click="sendMessage">发送</a-button>
+      <a-button @click="switchModel">
+        <template #icon>
+          <code-outlined v-if="!txtChatModel"/>
+          <audio-outlined v-if="txtChatModel"/>
         </template>
-      </a-input-search>
+      </a-button>
+      <a-button v-if="!txtChatModel" class="send-txt"
+                @mousedown="startRecord"
+                @mouseup="stopRecord">{{ recording ? '录制中...' : '按住说话' }}
+      </a-button>
+      <a-input v-if="txtChatModel" v-model:value="inputMessage"
+               class="send-txt"
+               placeholder="请输入信息"
+               enterkeyhint="send"
+               size="large"
+               @pressEnter="sendMessage"></a-input>
+      <a-button @click="sendMessage">
+        <template #icon>
+          <send-outlined/>
+        </template>
+      </a-button>
     </template>
   </page>
 </template>
@@ -52,6 +63,7 @@ import Page from '../../components/Page.vue'
 import {marked} from 'marked';
 import hljs from 'highlight.js'
 import 'highlight.js/styles/base16/github.css'
+import OpenAiLogo from '../../assets/openai.webp'
 
 const router = useRouter();
 const route = useRoute();
@@ -60,6 +72,7 @@ const {proxy} = getCurrentInstance() as any
 defineComponent({
   Page
 })
+
 
 const name = route.query.username?.toString();
 /*const messages = ref([
@@ -70,6 +83,8 @@ const name = route.query.username?.toString();
   },
   {sentByMe: false, avatar: 'friend-avatar-url', content: '你好！你是谁？'},
 ]);*/
+const txtChatModel = ref(true)
+
 const messages: any = ref([])
 const inputMessage = ref('');
 
@@ -83,7 +98,6 @@ marked.setOptions({
   gfm: true,	// 启动类似于Github样式的Markdown语法
   pedantic: false, // 只解析符合Markdwon定义的，不修正Markdown的错误
   sanitize: false, // 原始输出，忽略HTML标签（关闭后，可直接渲染HTML标签）
-
   // 高亮的语法规范
   //highlight: (code, lang) => hljs.highlight(code, {language: lang}).value,
   highlight: (code) => hljs.highlightAuto(code).value,
@@ -105,13 +119,13 @@ const sendMessage = () => {
   }
   if (name === "OpenAi对话") {
     proxy.$httpClient.post("/api/openai/chat", {messages: messageList}).then((data: any) => {
-      messages.value.push({sentByMe: false, avatar: 'my-avatar-url', content: marked(data.msg)});
+      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg)});
     }).catch((reason: any) => {
       proxy.$dlg.error(reason)
     })
   } else if (name === "OpenAi画图") {
     proxy.$httpClient.post("/api/openai/img", {messages: messageList}).then((data: any) => {
-      messages.value.push({sentByMe: false, avatar: 'my-avatar-url', content: marked(data.msg)});
+      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg)});
     }).catch((reason: any) => {
       proxy.$dlg.error(reason)
     })
@@ -120,6 +134,61 @@ const sendMessage = () => {
 const handleMenuClick = (e: any) => {
   if (e.key === 'refresh') {
     window.document.location.reload()
+  } else if (e.key === 'clearMsg') {
+    messages.value = []
+  }
+}
+const switchModel = () => {
+  txtChatModel.value = !txtChatModel.value
+}
+
+
+const mediaRecorder = ref<MediaRecorder | null>(null);
+const audioChunks = ref<BlobPart[]>([]);
+const recording = ref(false)
+const startRecord = () => {
+  console.log("start recored......")
+  //MediaStreamConstraints
+  const constraints = {
+    audio: {
+      sampleRate: 44100, // 采样率
+      channelCount: 2,   // 声道
+      volume: 6.0     // 音量
+    }
+  }
+  window.navigator.mediaDevices.getUserMedia(constraints).then(mediaStream => {
+    mediaRecorder.value = new MediaRecorder(mediaStream)
+    mediaRecorder.value.onstart = () => {
+      recording.value = true;
+    }
+    mediaRecorder.value.onstop = () => {
+      recording.value = false;
+    }
+    mediaRecorder.value.ondataavailable = (event) => {
+      audioChunks.value.push(event.data);
+    }
+    mediaRecorder.value.start()
+  }).catch(err => {
+    // 如果用户电脑没有麦克风设备或者用户拒绝了，或者连接出问题了等
+    // 这里都会抛异常，并且通过err.name可以知道是哪种类型的错误
+    console.error(err);
+  });
+}
+const stopRecord = () => {
+  if (mediaRecorder.value) {
+    mediaRecorder.value.addEventListener('stop', () => {
+      const audioBlob = new Blob(audioChunks.value, {type: 'audio/wav'});
+      audioChunks.value = []; // 清空录音数据
+      console.log(audioBlob)
+      let audioUrl = URL.createObjectURL(audioBlob)
+      messages.value.push({
+        sentByMe: true,
+        avatar: 'my-avatar-url',
+        content: '<audio src="' + audioUrl + '" controls/>'
+      });
+    });
+
+    mediaRecorder.value.stop();
   }
 }
 onMounted(() => {
@@ -130,20 +199,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.chat-header {
-  padding: 12px 0;
-  cursor: pointer;
-}
-
-.chat-title {
-  text-align: center;
-}
-
-.chat-content {
-  padding: 12px;
-  overflow-y: auto;
-  max-height: 300px;
-}
 
 .chat-message {
   display: inline-block;
@@ -168,9 +223,12 @@ onMounted(() => {
   background-color: #95df68;
 }
 
-.chat-footer {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
+.send-txt {
+  border: 0;
+  margin-left: 5px;
+  margin-right: 5px;
+  border-radius: 5px;
+  flex: 1;
 }
+
 </style>

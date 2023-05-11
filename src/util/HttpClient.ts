@@ -11,10 +11,11 @@ class HttpClient {
         if (env) {
             //return 'https://pdev.yonyougov.top';
             //return location.origin
-            return location.origin+"/wchatgpt-be"
+            //return location.origin+"/wchatgpt-be"
             //return 'http://127.0.0.1:8080/wchatgpt-be';
             // return 'http://127.0.0.1:80';
             // return 'https://devopstest.yonyougov.top';
+            return import.meta.env.VITE_BASE_URL
         }
 
         // eslint-disable-next-line no-restricted-globals

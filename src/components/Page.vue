@@ -48,7 +48,7 @@ const returnHandler = () => {
 .x-header {
   background-color: #1890ff;
   color: white;
-  font-size: 1.5rem;
+  font-size: 16px;
   padding: 10px;
   vertical-align: middle;
   height: 50px;
