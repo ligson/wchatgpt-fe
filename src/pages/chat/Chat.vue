@@ -38,6 +38,8 @@
         </template>
       </a-button>
       <a-button v-if="!txtChatModel" class="send-txt"
+                @touchstart="startRecord"
+                @touchend="stopRecord"
                 @mousedown="startRecord"
                 @mouseup="stopRecord">{{ recording ? '录制中...' : '按住说话' }}
       </a-button>
@@ -180,12 +182,25 @@ const stopRecord = () => {
       const audioBlob = new Blob(audioChunks.value, {type: 'audio/wav'});
       audioChunks.value = []; // 清空录音数据
       console.log(audioBlob)
+      let formData = new FormData()
+      formData.set("file", audioBlob);
+
       let audioUrl = URL.createObjectURL(audioBlob)
-      messages.value.push({
-        sentByMe: true,
-        avatar: 'my-avatar-url',
-        content: '<audio src="' + audioUrl + '" controls/>'
-      });
+
+
+      proxy.$httpClient.fetch("/api/openai/audio2txt",
+          "POST",
+          {headers: {'Content-Type': 'multipart/form-data'}},
+          formData).then((data: any) => {
+        console.log(data)
+        messages.value.push({
+          sentByMe: true,
+          avatar: 'my-avatar-url',
+          content: '<audio src="' + audioUrl + '" controls/>'+data.text
+        });
+      }).catch((err: any) => {
+        console.error(err)
+      })
     });
 
     mediaRecorder.value.stop();

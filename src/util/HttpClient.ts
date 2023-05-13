@@ -26,14 +26,20 @@ class HttpClient {
         , method: any,
                         config: any = {},
                         data: any): Promise<void | any> {
+        let headers: any = {}
+        if (config && config.headers) {
+            headers = config.headers
+        } else {
+            headers['Content-Type'] = 'application/json'
+        }
+        if (!headers.token) {
+            headers.token = window.localStorage.getItem("token") || ''
+        }
         return axios.request({
             url: url,
             method: method,
             baseURL: HttpClient.getBaseUrl(),
-            headers: {
-                'token': window.localStorage.getItem("token") || '',
-                'Content-Type': 'application/json'
-            },
+            headers: headers,
             ...config,
             data: data
         }).then((result: any) => {
