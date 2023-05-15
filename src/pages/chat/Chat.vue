@@ -17,7 +17,18 @@
       <div v-for="(message, index) in messages" :key="index"
            :class="message.sentByMe?'chat-message-item chat-message-right':'chat-message-item'">
         <template v-if="message.sentByMe">
-          <div class="chat-message" v-html="message.content"></div>
+
+          <!--          <div class="chat-message">{{ test(message) }}</div>-->
+          <template v-if="message.type==='audio'">
+            <chat-message @playAudio="playAudio(index)"
+                          :audio-url="message.audioUrl"
+                          :audio-text="message.audioText"
+            />
+          </template>
+          <template v-else>
+            <div class="chat-message" v-html="message.content"></div>
+          </template>
+
           <a-avatar shape="square">
             <template #icon>
               <user-outlined/>
@@ -26,7 +37,16 @@
         </template>
         <template v-else>
           <a-avatar shape="square" :src="message.avatar"/>
-          <div class="chat-message" v-html="message.content"></div>
+          <!--          <div class="chat-message">{{ test(message) }}</div>-->
+          <template v-if="message.type==='text'">
+            <div class="chat-message" v-html="message.content"></div>
+          </template>
+          <template v-else>
+            <chat-message @playAudio="playAudio(index)"
+                          :audio-url="message.audioUrl"
+                          :audio-text="message.audioText"
+            />
+          </template>
         </template>
       </div>
     </template>
@@ -58,7 +78,7 @@
   </page>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import {defineComponent, getCurrentInstance, onMounted, ref} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import Page from '../../components/Page.vue'
@@ -66,13 +86,14 @@ import {marked} from 'marked';
 import hljs from 'highlight.js'
 import 'highlight.js/styles/base16/github.css'
 import OpenAiLogo from '../../assets/openai.webp'
+import ChatMessage from "./ChatMessage.vue";
 
 const router = useRouter();
 const route = useRoute();
 const {proxy} = getCurrentInstance() as any
 
 defineComponent({
-  Page
+  Page, ChatMessage
 })
 
 
@@ -121,13 +142,13 @@ const sendMessage = () => {
   }
   if (name === "OpenAi对话") {
     proxy.$httpClient.post("/api/openai/chat", {messages: messageList}).then((data: any) => {
-      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg)});
+      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg), type: 'text'});
     }).catch((reason: any) => {
       proxy.$dlg.error(reason)
     })
   } else if (name === "OpenAi画图") {
     proxy.$httpClient.post("/api/openai/img", {messages: messageList}).then((data: any) => {
-      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg)});
+      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg), type: 'text'});
     }).catch((reason: any) => {
       proxy.$dlg.error(reason)
     })
@@ -176,6 +197,14 @@ const startRecord = () => {
     console.error(err);
   });
 }
+
+const audioRefs = ref<Array<HTMLAudioElement>>([]);
+const playAudio = (idx: number) => {
+  audioRefs.value = Array.from(document.querySelectorAll('audio'));
+  if (audioRefs.value[idx]) {
+    audioRefs.value[idx].play();
+  }
+}
 const stopRecord = () => {
   if (mediaRecorder.value) {
     mediaRecorder.value.addEventListener('stop', () => {
@@ -192,11 +221,15 @@ const stopRecord = () => {
           "POST",
           {headers: {'Content-Type': 'multipart/form-data'}},
           formData).then((data: any) => {
+
         console.log(data)
         messages.value.push({
           sentByMe: true,
           avatar: 'my-avatar-url',
-          content: '<audio src="' + audioUrl + '" controls/>'+data.text
+          content: '',
+          type: 'audio',
+          audioUrl: audioUrl,
+          audioText: data.text
         });
       }).catch((err: any) => {
         console.error(err)
@@ -205,6 +238,12 @@ const stopRecord = () => {
 
     mediaRecorder.value.stop();
   }
+}
+const test = (info: any) => {
+  debugger
+  return <div>
+    {info.sentByMe}
+  </div>
 }
 onMounted(() => {
   if (!name) {
