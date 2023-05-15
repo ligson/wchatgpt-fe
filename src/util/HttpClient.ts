@@ -15,7 +15,8 @@ class HttpClient {
             //return 'http://127.0.0.1:8080/wchatgpt-be';
             // return 'http://127.0.0.1:80';
             // return 'https://devopstest.yonyougov.top';
-            return import.meta.env.VITE_BASE_URL
+            return import.meta.env.VITE_BASE_URL || ""
+            //return process.env.VITE_BASE_URL
         }
 
         // eslint-disable-next-line no-restricted-globals

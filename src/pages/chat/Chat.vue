@@ -239,12 +239,7 @@ const stopRecord = () => {
     mediaRecorder.value.stop();
   }
 }
-const test = (info: any) => {
-  debugger
-  return <div>
-    {info.sentByMe}
-  </div>
-}
+
 onMounted(() => {
   if (!name) {
     proxy.$dlg.error("参数错误")
