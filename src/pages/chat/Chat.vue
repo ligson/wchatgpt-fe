@@ -19,34 +19,18 @@
         <template v-if="message.sentByMe">
 
           <!--          <div class="chat-message">{{ test(message) }}</div>-->
-          <template v-if="message.type==='audio'">
-            <chat-message @playAudio="playAudio(index)"
-                          :audio-url="message.audioUrl"
-                          :audio-text="message.audioText"
-            />
-          </template>
-          <template v-else>
-            <div class="chat-message" v-html="message.content"></div>
-          </template>
+          <chat-message :message="message" :class-name="'chat-message'"/>
 
-          <a-avatar shape="square">
+          <a-avatar shape="square" :size="32">
             <template #icon>
               <user-outlined/>
             </template>
           </a-avatar>
         </template>
         <template v-else>
-          <a-avatar shape="square" :src="message.avatar"/>
+          <a-avatar shape="square" :src="message.avatar" :size="32"/>
           <!--          <div class="chat-message">{{ test(message) }}</div>-->
-          <template v-if="message.type==='text'">
-            <div class="chat-message" v-html="message.content"></div>
-          </template>
-          <template v-else>
-            <chat-message @playAudio="playAudio(index)"
-                          :audio-url="message.audioUrl"
-                          :audio-text="message.audioText"
-            />
-          </template>
+          <chat-message :message="message" :class-name="'chat-message'"/>
         </template>
       </div>
     </template>
@@ -79,7 +63,7 @@
 </template>
 
 <script setup lang="tsx">
-import {defineComponent, getCurrentInstance, onMounted, ref} from 'vue';
+import {defineComponent, getCurrentInstance, onMounted, Ref, ref} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import Page from '../../components/Page.vue'
 import {marked} from 'marked';
@@ -87,6 +71,7 @@ import hljs from 'highlight.js'
 import 'highlight.js/styles/base16/github.css'
 import OpenAiLogo from '../../assets/openai.webp'
 import ChatMessage from "./ChatMessage.vue";
+import {Message} from "./Message";
 
 const router = useRouter();
 const route = useRoute();
@@ -108,7 +93,7 @@ const name = route.query.username?.toString();
 ]);*/
 const txtChatModel = ref(true)
 
-const messages: any = ref([])
+const messages: Ref<Array<Message>> = ref<Array<Message>>([])
 const inputMessage = ref('');
 
 const goBack = () => {
@@ -128,7 +113,14 @@ marked.setOptions({
 
 const sendMessage = () => {
   if (!inputMessage.value.trim()) return;
-  messages.value.push({sentByMe: true, avatar: 'my-avatar-url', content: inputMessage.value});
+  messages.value.push({
+    sentByMe: true,
+    avatar: 'my-avatar-url',
+    content: inputMessage.value,
+    type: 'text',
+    audioText: "",
+    audioUrl: ""
+  });
   inputMessage.value = '';
   let messageList: any = []
   for (let i = 0; i < messages.value.length; i++) {
@@ -142,13 +134,19 @@ const sendMessage = () => {
   }
   if (name === "OpenAi对话") {
     proxy.$httpClient.post("/api/openai/chat", {messages: messageList}).then((data: any) => {
-      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg), type: 'text'});
+      messages.value.push({
+        sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg), type: 'text', audioText: "",
+        audioUrl: ""
+      });
     }).catch((reason: any) => {
       proxy.$dlg.error(reason)
     })
   } else if (name === "OpenAi画图") {
     proxy.$httpClient.post("/api/openai/img", {messages: messageList}).then((data: any) => {
-      messages.value.push({sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg), type: 'text'});
+      messages.value.push({
+        sentByMe: false, avatar: OpenAiLogo, content: marked(data.msg), type: 'text', audioText: "",
+        audioUrl: ""
+      });
     }).catch((reason: any) => {
       proxy.$dlg.error(reason)
     })
@@ -197,14 +195,6 @@ const startRecord = () => {
     console.error(err);
   });
 }
-
-const audioRefs = ref<Array<HTMLAudioElement>>([]);
-const playAudio = (idx: number) => {
-  audioRefs.value = Array.from(document.querySelectorAll('audio'));
-  if (audioRefs.value[idx]) {
-    audioRefs.value[idx].play();
-  }
-}
 const stopRecord = () => {
   if (mediaRecorder.value) {
     mediaRecorder.value.addEventListener('stop', () => {
@@ -221,7 +211,6 @@ const stopRecord = () => {
           "POST",
           {headers: {'Content-Type': 'multipart/form-data'}},
           formData).then((data: any) => {
-
         console.log(data)
         messages.value.push({
           sentByMe: true,

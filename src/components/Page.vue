@@ -9,7 +9,7 @@
         <slot name="header-right"></slot>
       </div>
     </a-layout-header>
-    <a-layout-content class="x-content">
+    <a-layout-content class="x-content" :style="{width:contentWidth+'px'}">
       <slot name="content"></slot>
     </a-layout-content>
     <a-layout-footer class="x-footer">
@@ -21,6 +21,8 @@
 </template>
 
 <script lang="ts" setup>
+import {onMounted, ref} from "vue";
+
 defineProps({
   title: {
     type: String,
@@ -35,9 +37,19 @@ defineProps({
 const emit = defineEmits([
   "returnClick"
 ])
+const contentWidth = ref(0)
+const resizeUI = () => {
+  contentWidth.value = window.outerWidth - 20
+}
+window.onresize = () => {
+  resizeUI()
+}
 const returnHandler = () => {
   emit("returnClick")
 }
+onMounted(() => {
+  resizeUI()
+})
 </script>
 
 <style scoped>
@@ -57,19 +69,21 @@ const returnHandler = () => {
   align-items: center;
 }
 
-.x-header-return,.x-header-right {
+.x-header-return, .x-header-right {
   width: 24px;
   height: 24px;
   line-height: 24px;
 }
-.x-header-title{
+
+.x-header-title {
   flex: 1;
   text-align: center;
 }
 
 .x-content {
+  width: 100%;
   flex: 1;
-  overflow-y: auto;
+  overflow: auto;
   padding: 10px;
   background: #F3F3F3;
 }
