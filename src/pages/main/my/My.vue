@@ -20,14 +20,9 @@
           <div>修改密码</div>
           <right-outlined/>
         </a-list-item>
-        <a-list-item class="my-list-item" @click="upgradeUserHandler">
+        <a-list-item class="my-list-item" @click="adminHandler">
           <setting-outlined/>
-          <div>升级用户</div>
-          <right-outlined/>
-        </a-list-item>
-        <a-list-item class="my-list-item" @click="deleteUserHandler">
-          <setting-outlined/>
-          <div>删除用户</div>
+          <div>管理员</div>
           <right-outlined/>
         </a-list-item>
         <a-list-item class="my-list-item" @click="settingHandler">
@@ -68,13 +63,11 @@ const resetPwdHandler = () => {
 }
 
 const upgradeUserDlgRef = ref()
-const upgradeUserHandler = () => {
-  upgradeUserDlgRef.value.openDlg()
+const adminHandler = () => {
+  router.push({path: "/admin"})
 }
 const deleteUserDlgRef = ref()
-const deleteUserHandler = () => {
-  deleteUserDlgRef.value.openDlg()
-}
+
 const nickname = ref("")
 onMounted(() => {
   nickname.value = localStorage.getItem("username") || ""

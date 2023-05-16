@@ -45,6 +45,24 @@ const routes = [
         name: "chat",
         component: () => import('../pages/chat/Chat.vue'),
     },
+    {
+        path: '/admin',
+        name: 'admin',
+        redirect: "/admin/dashboard",
+        component: () => import('../pages/admin/admin.vue'),
+        children: [
+            {
+                path: '/admin/dashboard',
+                name: 'dashboard',
+                component: () => import('../pages/admin/dashboard/Dashboard.vue'),
+            },
+            {
+                path: '/admin/usermgr',
+                name: 'usermgr',
+                component: () => import('../pages/admin/usrmgr/UserMgr.vue'),
+            }
+        ]
+    }
     // ...
 ];
 
