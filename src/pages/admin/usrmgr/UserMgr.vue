@@ -123,6 +123,7 @@ const pageConfig = reactive({
   total: 0,
   showSizeChanger: true,
   showTotal: (total: any, range: any) => {
+    console.log(range)
     return "共" + total + "条记录"
   },
   showSizeChange: (current: number, size: number) => {
