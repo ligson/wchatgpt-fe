@@ -1,4 +1,4 @@
-import {defineConfig, loadEnv, UserConfigExport} from 'vite'
+import {defineConfig, loadEnv, ServerOptions, UserConfigExport} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsxPlugin from "@vitejs/plugin-vue-jsx";
 
@@ -9,11 +9,13 @@ export default (({mode}: { mode: any }) => {
     process.env = {...process.env, ...loadEnv(mode, process.cwd())};
 
 
-    const serverConfig = {
-        "^/.+/api": {
-            target: process.env.VITE_BASE_URL,
-            changeOrigin: true,
-            //rewrite:(path)=>{path.replace("")}
+    const serverConfig: ServerOptions = {
+        proxy: {
+            "^/.+/api": {
+                target: process.env.VITE_BASE_URL,
+                changeOrigin: true,
+                //rewrite:(path)=>{path.replace("")}
+            }
         }
     }
     const config: UserConfigExport = {
