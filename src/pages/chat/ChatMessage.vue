@@ -19,10 +19,12 @@ import {ref} from 'vue';
 
 defineProps({
   message: {
-    type: Object
+    type: Object,
+    required: true
   },
   className: {
-    type: String
+    type: String,
+    required: true
   }
 })
 const audioRef: any = ref(null)
