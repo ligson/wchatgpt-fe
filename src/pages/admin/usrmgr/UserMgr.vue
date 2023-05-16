@@ -215,6 +215,7 @@ const modifyUserLevelClick = () => {
     proxy.$dlg.error("请选中一条数据")
     return
   }
+  userId.value = selectedRowKeys.value[0]
   if (modifyUserLevelDlgRef.value) {
     modifyUserLevelDlgRef.value.openDlg()
   }
@@ -224,6 +225,7 @@ const modifyUserTypeClick = () => {
     proxy.$dlg.error("请选中一条数据")
     return
   }
+  userId.value = selectedRowKeys.value[0]
   if (modifyUserTypeDlgRef.value) {
     modifyUserTypeDlgRef.value.openDlg()
   }
@@ -233,6 +235,7 @@ const modifyUserTimesClick = () => {
     proxy.$dlg.error("请选中一条数据")
     return
   }
+  userId.value = selectedRowKeys.value[0]
   if (modifyUserTimesDlgRef.value) {
     modifyUserTimesDlgRef.value.openDlg()
   }
