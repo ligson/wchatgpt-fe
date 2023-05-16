@@ -85,6 +85,9 @@ const modifyUserLevelHandleOk = () => {
 }
 const openDlg = () => {
   modifyUserLevelDlgVisible.value = true
+  setTimeout(() => {
+    modifyUserLevelFormState.level = props.level || 'FREE'
+  }, 200)
 }
 defineExpose({
   openDlg

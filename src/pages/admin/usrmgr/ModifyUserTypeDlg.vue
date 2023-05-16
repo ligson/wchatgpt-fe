@@ -85,6 +85,9 @@ const modifyUserTypeHandleOk = () => {
 }
 const openDlg = () => {
   modifyUserTypeDlgVisible.value = true
+  setTimeout(() => {
+    modifyUserTypeFormState.userType = props.userType || 'NORMAL'
+  }, 200)
 }
 defineExpose({
   openDlg

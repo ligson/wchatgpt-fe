@@ -79,6 +79,9 @@ const modifyUserTimesHandleOk = () => {
 }
 const openDlg = () => {
   modifyUserTimesDlgVisible.value = true
+  setTimeout(() => {
+    modifyUserTimesFormState.times = props.times || '5'
+  }, 200)
 }
 defineExpose({
   openDlg

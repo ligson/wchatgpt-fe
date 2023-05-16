@@ -216,6 +216,7 @@ const modifyUserLevelClick = () => {
     return
   }
   userId.value = selectedRowKeys.value[0]
+  userLevel.value = selectedRows.value[0].level
   if (modifyUserLevelDlgRef.value) {
     modifyUserLevelDlgRef.value.openDlg()
   }
@@ -226,6 +227,7 @@ const modifyUserTypeClick = () => {
     return
   }
   userId.value = selectedRowKeys.value[0]
+  userType.value = selectedRows.value[0].userType
   if (modifyUserTypeDlgRef.value) {
     modifyUserTypeDlgRef.value.openDlg()
   }
@@ -236,6 +238,7 @@ const modifyUserTimesClick = () => {
     return
   }
   userId.value = selectedRowKeys.value[0]
+  userTimes.value = selectedRows.value[0].times
   if (modifyUserTimesDlgRef.value) {
     modifyUserTimesDlgRef.value.openDlg()
   }
