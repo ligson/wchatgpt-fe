@@ -32,12 +32,33 @@ const chats = reactive([
     message: 'ai画图',
     time: '',
   },
+  {
+    id: "3",
+    avatar: OpenAiLogo,
+    username: 'OpenAi照片',
+    message: 'ai照片修复',
+    time: '',
+  },
+  {
+    id: "4",
+    avatar: OpenAiLogo,
+    username: 'OpenAi象棋',
+    message: 'ai智能象棋',
+    time: '',
+  },
   // ...
 ]);
 const currentTab = ref("chats")
 
 const chatHandler = (chat: any) => {
-  router.push({name: "chat", query: {"username": chat.username}})
+  if(chat.username === 'OpenAi照片') {
+    router.push({name: "photo", query: {"username": chat.username}})
+  } else if(chat.username === 'OpenAi象棋') {
+    router.push({name: "chess", query: {"username": chat.username}})
+  } else {
+    router.push({name: "chat", query: {"username": chat.username}})
+  }
+  
 }
 </script>
 

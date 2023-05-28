@@ -6,7 +6,7 @@ class HttpClient {
         axios.defaults.withCredentials = true
     }
 
-    private static getBaseUrl(): string {
+    public static getBaseUrl(): string {
         const env = import.meta.env
         if (env) {
             //return 'https://pdev.yonyougov.top';
