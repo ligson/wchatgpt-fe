@@ -117,12 +117,27 @@ const ichat = ref(true)
 const logo = ref("")
 const bingLogo = () => {
   ichat.value = window.location.host === 'ichat.x-assn.xyz';
-  console.log(ichat.value+"=====")
+  console.log(ichat.value + "=====")
   logo.value = ichat.value ? Jmc : Abroket
-  console.log(logo.value+"=====")
+  console.log(logo.value + "=====")
+}
+const checkLogin = () => {
+  const token = window.localStorage.getItem("token")
+  if (token) {
+    httpClient.post("/api/auth/checkLogin", {
+      token: token
+    }).then((data: any) => {
+      //window.localStorage.setItem("token", data.token)
+      window.localStorage.setItem("username", data.username)
+      router.push({path: "/main"})
+    }).catch((reason: any) => {
+      proxy.$dlg.error(reason)
+    })
+  }
 }
 onMounted(() => {
   bingLogo()
+  checkLogin()
   refreshCaptcha()
 })
 </script>
