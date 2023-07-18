@@ -15,7 +15,7 @@ class HttpClient {
             //return 'http://127.0.0.1:8080/wchatgpt-be';
             // return 'http://127.0.0.1:80';
             // return 'https://devopstest.yonyougov.top';
-            return import.meta.env.VITE_BASE_URL || location.origin+"/wchatgpt-be"
+            return import.meta.env.VITE_BASE_URL || location.origin + "/wchatgpt-be"
             //return process.env.VITE_BASE_URL
         }
 
@@ -47,12 +47,21 @@ class HttpClient {
             if (result.data.success) {
                 return Promise.resolve(result.data.data);
             } else {
-                return Promise.reject(result.data.errorMsg);
+                if (result.data.errorType === "Business") {
+                    return Promise.reject(result.data.errorMsg);
+                } else {
+                    console.error(JSON.stringify(result.data))
+                    return Promise.reject("内部错误，请联系管理员!");
+                }
             }
         }).catch((reason) => {
-            console.error(reason)
+            console.error(JSON.stringify(reason))
             if (reason.response) {
-                return Promise.reject(reason?.response?.data?.errorMsg);
+                if (reason.response.data && reason.response.data.errorType === "Business") {
+                    return Promise.reject(reason.response.data.errorMsg);
+                } else {
+                    return Promise.reject("内部错误，请联系管理员!");
+                }
             } else if (reason.message) {
                 return Promise.reject(reason.message);
             } else {

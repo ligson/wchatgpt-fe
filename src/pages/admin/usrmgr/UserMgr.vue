@@ -90,27 +90,29 @@ const userType = ref("")
 const columns = ref([
   {
     title: '名称',
-    dataIndex: 'name'
+    dataIndex: 'name',
+    sorter: true
   },
   {
     title: '级别',
-    dataIndex: 'level'
+    dataIndex: 'level',
+    sorter: true
   },
   {
     title: '类型',
-    dataIndex: 'userType'
+    dataIndex: 'userType', sorter: true
   },
   {
     title: '次数',
-    dataIndex: 'times'
+    dataIndex: 'times', sorter: true
   },
   {
     title: '注册时间',
-    dataIndex: 'createdTime'
+    dataIndex: 'createTime', sorter: true
   },
   {
     title: '上次登录时间',
-    dataIndex: 'lastedLoginTime'
+    dataIndex: 'lastedLoginTime', sorter: true
   },
 ])
 const dataSource: any = ref([])
@@ -119,7 +121,7 @@ const pageConfig = reactive({
   defaultPageSize: 10,
   pageSize: 10,
   sort: 'name',
-  order: 'asc',
+  order: 'ASC',
   total: 0,
   showSizeChanger: true,
   showTotal: (total: any, range: any) => {
@@ -132,11 +134,18 @@ const pageConfig = reactive({
   }
 })
 
-const pageChange = (page: any) => {
+const pageChange = (page: any,
+                    _: any,
+                    sorter: any,) => {
+
   //{"current":2,"pageSize":10,"total":138,"showSizeChanger":true}
-  console.log(JSON.stringify(page))
+  console.log(JSON.stringify(sorter))
   pageConfig.pageSize = page.pageSize;
   pageConfig.current = page.current;
+  if (sorter.field) {
+    pageConfig.sort = sorter.field;
+    pageConfig.order = sorter.order === "ascend" ? "ASC" : "DESC"
+  }
   query()
 }
 
@@ -161,6 +170,7 @@ const query = () => {
     loading.value = false
   }).catch((e: any) => {
     loading.value = false
+    console.log(JSON.stringify(e))
     proxy.$dlg.error(e)
   })
 }
